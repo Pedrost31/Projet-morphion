@@ -49,12 +49,19 @@ def ai_turn(game):
     time.sleep(2)  # Délai de 2 secondes avant que l'IA joue
     empty_indices = [i for i, value in enumerate(game) if value == "-"]
     if empty_indices:
-        index = check_win_or_block(game, "O")  # Recherche un coup gagnant pour l'IA
+        if currentPlayer == "X":
+            symbol = "O"  # L'IA joue avec le symbole opposé
+        else:
+            symbol = "X"  # L'IA joue avec le symbole opposé
+        # Recherche un coup gagnant pour l'IA
+        index = check_win_or_block(game, symbol)
         if index is None:
-            index = check_win_or_block(game, "X")  # Recherche un coup à bloquer pour l'IA
+            # Recherche un coup à bloquer pour l'IA
+            index = check_win_or_block(game, currentPlayer)
         if index is None:
-            index = random.choice(empty_indices)  # Si aucun coup gagnant ou à bloquer n'est trouvé, jouer au hasard
-        game[index] = "O"
+            # Si aucun coup gagnant ou à bloquer n'est trouvé, jouer au hasard
+            index = random.choice(empty_indices)
+        game[index] = symbol
         return index  # Retourne la position sélectionnée par l'IA
 
 # Fonction pour vérifier s'il y a une possibilité de gagner ou de bloquer pour un symbole donné
@@ -95,8 +102,8 @@ def checknul(game):
         printGame(game)
         print(f"C'est un match nul ⚠️")
         gameRunning = True
-        f = input("Voulez vous rejouez une autre fois? y/n:")
-        if f == "n":
+        f = input("Voulez vous rejouez une autre fois? y/n:").upper()
+        if f == "N":
             gameRunning = False
         else:
             reset_game()
@@ -107,16 +114,24 @@ def checkvictoire(game):
     if check_diagonal(game, currentPlayer) or check_horizontal(game, currentPlayer) or check_vertical(game, currentPlayer):
         printGame(game)  # Affiche la grille complète
         print(f"Bien joué à {currentPlayer} 🏆")
-        f = input("Voulez vous rejouer une autre fois? y/n:")
-        if f == "n":
+        f = input("Voulez vous rejouer une autre fois? y/n:").upper()
+        if f == "N":
             gameRunning = False
         else:
             reset_game()
-    elif check_diagonal(game, "O") or check_horizontal(game, "O") or check_vertical(game, "O"):
+    elif currentPlayer == "X" and (check_diagonal(game, "O") or check_horizontal(game, "O") or check_vertical(game, "O")):
         printGame(game)  # Affiche la grille complète
         print(f"Bien joué à l'IA 🏆")
-        f = input("Voulez vous rejouer une autre fois? y/n:")
-        if f == "n":
+        f = input("Voulez vous rejouer une autre fois? y/n:").upper()
+        if f == "N":
+            gameRunning = False
+        else:
+            reset_game()
+    elif currentPlayer == "O" and (check_diagonal(game, "X") or check_horizontal(game, "X") or check_vertical(game, "X")):
+        printGame(game)  # Affiche la grille complète
+        print(f"Bien joué à l'IA 🏆")
+        f = input("Voulez vous rejouer une autre fois? y/n:").upper()
+        if f == "N":
             gameRunning = False
         else:
             reset_game()
