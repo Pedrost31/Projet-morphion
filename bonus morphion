@@ -1,1 +1,125 @@
 
+import random 
+import time
+
+def printGame(game, size):
+    """Fonction pour afficher la grille de jeu."""
+    for i in range(size):
+        print(" | ".join(game[i*size : (i+1)*size]))
+        if i != size - 1:
+            print("-" * (4*size - 1))
+
+def check_horizontal(game, symbol, size):
+    """Fonction pour vérifier s'il y a une victoire horizontale."""
+    for i in range(0, size*size, size):
+        if all(game[j] == symbol for j in range(i, i+size)):
+            return True
+    return False
+
+def check_vertical(game, symbol, size):
+    """Fonction pour vérifier s'il y a une victoire verticale."""
+    for i in range(size):
+        if all(game[j] == symbol for j in range(i, size*size, size)):
+            return True
+    return False
+
+def check_diagonal(game, symbol, size):
+    """Fonction pour vérifier s'il y a une victoire diagonale."""
+    if all(game[i*size + i] == symbol for i in range(size)):
+        return True
+    if all(game[i*size + (size-1-i)] == symbol for i in range(size)):
+        return True
+    return False
+
+def check_victory(game, symbol, size):
+    """Fonction pour vérifier s'il y a une victoire."""
+    return (check_horizontal(game, symbol, size) or 
+            check_vertical(game, symbol, size) or 
+            check_diagonal(game, symbol, size))
+
+def choose_symbol():
+    """Fonction pour permettre à l'utilisateur de choisir son symbole."""
+    while True:
+        symbol = input("Veuillez choisir votre symbole (X ou O) : ").upper()
+        if symbol == "X" or symbol == "O":
+            return symbol
+        else:
+            print("Symbole invalide. Veuillez choisir entre X et O.")
+
+def playerinput(game, size):
+    """Fonction pour permettre au joueur de saisir son coup."""
+    while True:
+        inp = input(f"Entrez un chiffre entre 1-{size*size} : ")
+        if inp.isdigit():
+            inp = int(inp)
+            if inp >= 1 and inp <= size*size and game[inp - 1] == "-":
+                return inp - 1
+            else:
+                print("Position invalide ou déjà occupée. Réessayez.")
+        else:
+            print("Veuillez entrer un numéro valide.")
+
+def reset_game(size):
+    """Fonction pour réinitialiser la grille du jeu."""
+    return ['-'] * (size*size)
+
+def ai_turn(game, size):
+    """Fonction pour simuler le tour de l'ordinateur."""
+    print("L'IA est en train de réfléchir...")
+    time.sleep(2)  # Délai de 2 secondes avant que l'IA joue
+    empty_indices = [i for i, value in enumerate(game) if value == "-"]
+    if empty_indices:
+        index = check_win_or_block(game, "O", size)  # Recherche un coup gagnant pour l'IA
+        if index is None:
+            index = check_win_or_block(game, "X", size)  # Recherche un coup à bloquer pour l'IA
+        if index is None:
+            index = random.choice(empty_indices)  # Si aucun coup gagnant ou à bloquer n'est trouvé, jouer au hasard
+        game[index] = "O"
+        return index  # Retourne la position sélectionnée par l'IA
+
+def check_win_or_block(game, symbol, size):
+    """Fonction pour vérifier s'il y a un coup gagnant ou à bloquer."""
+    for i in range(0, size*size, size):
+        if game[i] == "-":
+            game[i] = symbol
+            if check_horizontal(game, symbol, size) or check_vertical(game, symbol, size) or check_diagonal(game, symbol, size):
+                game[i] = "-"
+                return i
+            game[i] = "-"
+    return None
+
+def checknul(game):
+    """Fonction pour vérifier s'il y a un match nul."""
+    if "-" not in game:
+        print("C'est un match nul ⚠️")
+        return True
+    return False
+
+def main():
+    """Fonction principale pour gérer le déroulement du jeu."""
+    size = int(input("Entrez la taille de la grille (par exemple, 3 pour une grille 3x3) : "))
+    game = reset_game(size)
+    currentPlayer = choose_symbol()
+    while True:
+        printGame(game, size)
+        if currentPlayer == "X":
+            last_move = playerinput(game, size)
+            game[last_move] = "X"  # Mettre à jour la grille avec le coup du joueur
+        else:
+            last_move = ai_turn(game, size)
+        if check_victory(game, currentPlayer, size):
+            printGame(game, size)  # Affiche la grille finale
+            print(f"Bien joué à {currentPlayer} 🏆")
+            break
+        if checknul(game):
+            printGame(game, size)  # Affiche la grille finale
+            print("C'est un match nul ⚠️")
+            break
+        currentPlayer = "O" if currentPlayer == "X" else "X"
+
+    rejouer = input("Voulez-vous rejouer ? (Y/N) : ")
+    if rejouer.upper() == "Y":
+        main()
+
+if __name__ == "__main__":
+    main()
